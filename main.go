@@ -2,9 +2,6 @@ package main
 
 import (
 	"flag"
-
-	"encoding/json"
-
 	astilectron "github.com/asticode/go-astilectron"
 	bootstrap "github.com/asticode/go-astilectron-bootstrap"
 	astilog "github.com/asticode/go-astilog"
@@ -14,7 +11,9 @@ import (
 const htmlAbout = `Welcome !!`
 
 var (
+	// AppName 在bundler.json中配置的app_names
 	AppName string
+	// BuiltAt 构建时自动获取的时间
 	BuiltAt string
 	debug   = flag.Bool("d", true, "Enables the debug mode")
 	w       *astilectron.Window
@@ -22,6 +21,11 @@ var (
 
 func main() {
 	flag.Parse()
+
+	startUI()
+}
+
+func startUI() {
 	astilog.FlagInit()
 
 	astilog.Debugf("Running app built at %s", BuiltAt)
@@ -73,6 +77,7 @@ func main() {
 					BackgroundColor: astilectron.PtrStr("#FFF"),
 					Center:          astilectron.PtrBool(true),
 					Height:          astilectron.PtrInt(700),
+					Resizable:       astilectron.PtrBool(false),
 					Width:           astilectron.PtrInt(1050),
 				},
 			},

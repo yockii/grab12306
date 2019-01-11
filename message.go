@@ -10,7 +10,7 @@ import (
 func handleMessages(w *astilectron.Window, m bootstrap.MessageIn) (payload interface{}, err error) {
 	switch m.Name {
 	case "explore":
-			
+		
 	}
 	return
 }
