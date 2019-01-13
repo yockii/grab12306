@@ -2,7 +2,6 @@ package cdnutil
 
 import (
 	"bytes"
-	"crypto/tls"
 	"encoding/base64"
 	"fmt"
 	"io/ioutil"
@@ -31,27 +30,6 @@ type Cdn struct {
 	Speed int64
 }
 
-var client *http.Client
-var once sync.Once
-
-func getClient() *http.Client {
-	once.Do(func() {
-		//跳过证书验证
-		tr := &http.Transport{
-			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-			// Dial: (&net.Dialer{
-			// 	Timeout: 30 * time.Second,
-			// }).Dial,
-			// TLSHandshakeTimeout: 30 * time.Second,
-		}
-		client = &http.Client{
-			Transport: tr,
-			Timeout:   time.Duration(30 * time.Second),
-		}
-	})
-	return client
-}
-
 // GetCdnList 从服务器获取Cdn列表
 func GetCdnList() []Cdn {
 	var r []Cdn
@@ -64,6 +42,7 @@ func GetCdnList() []Cdn {
 		content, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			fmt.Println("Fatal error ", err.Error())
+			return nil
 		}
 		cs := jsoniter.Get(content, "content").ToString()
 		dbs, err := base64.StdEncoding.DecodeString(cs)
@@ -113,7 +92,7 @@ func verifyCdn(cdn *Cdn) bool {
 
 	t0 := time.Now()
 
-	res, err := getClient().Do(req)
+	res, err := netutil.GetClient().Do(req)
 	if err != nil {
 		return false
 	}
