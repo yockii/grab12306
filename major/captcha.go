@@ -8,17 +8,20 @@ import (
 	"strconv"
 
 	"github.com/yockii/grab12306/captcha"
+	"github.com/yockii/grab12306/constant"
 
 	netutil "github.com/yockii/grab12306/utils/net"
-
-	"github.com/yockii/grab12306/config"
 )
 
 func getLoginCaptchaResult() (captchaResult string, err error) {
 	imgContent, err := getLoginCaptcha()
-	// captcha.RequestRuokuaiCaptchaResult("captcha.jpg")
-	// captcha.RequestRuokuaiCaptchaResult(imgContent)
-	captchaResult = captcha.RuokuaiCaptchaResult(imgContent)
+	if err != nil {
+		return
+	}
+	captchaResult, err = captcha.RuokuaiCaptchaResult(imgContent)
+	if err != nil {
+		return
+	}
 	if captchaResult == "" {
 		err = errors.New("验证码识别失败")
 	}
@@ -27,7 +30,7 @@ func getLoginCaptchaResult() (captchaResult string, err error) {
 
 func getLoginCaptcha() (imgContent []byte, err error) {
 	var urlBuffer bytes.Buffer
-	urlBuffer.WriteString(config.Urls["loginCaptcha"])
+	urlBuffer.WriteString(constant.Urls["loginCaptcha"])
 	urlBuffer.WriteString("?login_site=E&module=login&rand=sjrand&")
 	urlBuffer.WriteString(strconv.FormatFloat(rand.Float64(), 'f', 16, 64))
 

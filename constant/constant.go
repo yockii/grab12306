@@ -1,4 +1,4 @@
-package config
+package constant
 
 // Domain 站点主域名
 const Domain = ""
@@ -28,6 +28,8 @@ var Urls = map[string]string{
 	"auth":          "https://kyfw.12306.cn/passport/web/auth/uamtk",
 	"uamauthclient": "https://kyfw.12306.cn/otn/uamauthclient",
 	"passengers":    "https://kyfw.12306.cn/otn/passengers/query",
+	"leftTicket":    "https://kyfw.12306.cn/otn/leftTicket/queryZ",
+	"leftTicketCDN": "https://%s/otn/leftTicket/queryZ",
 }
 
 // CaptchaPoints 验证码坐标，后期改为通过随机数计算

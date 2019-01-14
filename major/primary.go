@@ -2,6 +2,7 @@ package major
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -9,14 +10,14 @@ import (
 	"net/url"
 	"strings"
 
-	jsoniter "github.com/json-iterator/go"
-	"github.com/yockii/grab12306/config"
+	"github.com/yockii/grab12306/constant"
+
 	netutil "github.com/yockii/grab12306/utils/net"
 )
 
 func openLoginPage() (err error) {
 	client := netutil.GetMajorClient()
-	req, err := http.NewRequest("GET", config.Urls["loginPage"], nil)
+	req, err := http.NewRequest("GET", constant.Urls["loginPage"], nil)
 	if err != nil {
 		return
 	}
@@ -43,7 +44,7 @@ func LoginSuit(username, password string) (isPass bool, err error) {
 		if i > 0 {
 			buffer.WriteString(",")
 		}
-		buffer.WriteString(config.CaptchaPoints[strings.TrimSpace(v)])
+		buffer.WriteString(constant.CaptchaPoints[strings.TrimSpace(v)])
 	}
 	captchaAnswer := buffer.String()
 	fmt.Println("识别结果处理完毕，提交的验证码答案坐标:", captchaAnswer)
@@ -71,46 +72,71 @@ func LoginSuit(username, password string) (isPass bool, err error) {
 	return
 }
 
+// UamauthClientResponse 获取校验后的用户名返回信息
+type UamauthClientResponse struct {
+	ResultCode int    `json:"result_code"`
+	Username   string `json:"username"`
+}
+
 func getUsername() (success bool) {
 	client := netutil.GetMajorClient()
 	data := make(url.Values)
 	data["tk"] = []string{MyAccount.AppToken}
-	res, err := client.PostForm(config.Urls["uamauthclient"], data)
+	res, err := client.PostForm(constant.Urls["uamauthclient"], data)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 	defer res.Body.Close()
 	content, err := ioutil.ReadAll(res.Body)
-	resultCode := jsoniter.Get(content, "result_code").ToInt()
-	if resultCode == 0 {
-		MyAccount.Username = jsoniter.Get(content, "username").ToString()
+	var uRes UamauthClientResponse
+	err = json.Unmarshal(content, &uRes)
+	if uRes.ResultCode == 0 {
+		MyAccount.Username = uRes.Username
 		success = true
 		return
 	}
 	return
 }
 
+// AuthResponse 校验请求返回信息，主要获取token
+type AuthResponse struct {
+	ResultCode int    `json:"result_code"`
+	AppToken   string `json:"newapptk"`
+}
+
 func auth() (success bool) {
 	client := netutil.GetMajorClient()
 	data := make(url.Values)
 	data["appid"] = []string{"otn"}
-	res, err := client.PostForm(config.Urls["auth"], data)
+	res, err := client.PostForm(constant.Urls["auth"], data)
 	if err != nil {
+		fmt.Println(err)
 		return
 	}
 	defer res.Body.Close()
 	content, err := ioutil.ReadAll(res.Body)
-	resultCode := jsoniter.Get(content, "result_code").ToInt()
-	if resultCode == 0 {
+	var aRes AuthResponse
+	err = json.Unmarshal(content, &aRes)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	if aRes.ResultCode == 0 {
 		fmt.Println("校验成功")
 		success = true
-		newapptk := jsoniter.Get(content, "newapptk").ToString()
-		MyAccount.AppToken = newapptk
+		MyAccount.AppToken = aRes.AppToken
 		MyAccount.Logined = true
 		return
 	}
 	return
+}
+
+// BaseLoginResponse 登录返回
+type BaseLoginResponse struct {
+	ResultCode int    `json:"result_code"`
+	Uamtk      string `json:"uamtk"`
 }
 
 func login(username, password string) (success bool) {
@@ -121,42 +147,36 @@ func login(username, password string) (success bool) {
 	data["password"] = []string{password}
 	data["appid"] = []string{"otn"}
 
-	res, err := client.PostForm(config.Urls["baseLogin"], data)
+	res, err := client.PostForm(constant.Urls["baseLogin"], data)
 	if err != nil {
+		fmt.Println(err)
 		return
 	}
 	defer res.Body.Close()
 	content, err := ioutil.ReadAll(res.Body)
 
-	resultCode := jsoniter.Get(content, "result_code").ToInt()
-	if resultCode == 0 {
+	var blRes BaseLoginResponse
+	err = json.Unmarshal(content, &blRes)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	if blRes.ResultCode == 0 {
 		fmt.Println("登录成功")
 		success = true
-		// uamtk = jsoniter.Get(content, "uamtk").ToString()
 		return
 	}
 	return
 }
 
+// CheckCaptchaResponse 登录返回
+type CheckCaptchaResponse struct {
+	ResultCode    int    `json:"result_code"`
+	ResultMessage string `json:"result_message"`
+}
+
 func captchaCheck(captchaAnswer string) (err error) {
-	// client := netutil.GetMajorClient()
-	// u, err := url.Parse()
-	// if err != nil {
-	// 	return
-	// }
-	// q := u.Query()
-	// // q.Set("callback", "jQuery19105351335444165837_1547224186345")
-	// q.Set("answer", captchaAnswer)
-	// q.Set("rand", "sjrand")
-	// q.Set("login_site", "E")
-
-	// req, err := http.NewRequest("POST", config.Urls["checkCaptcha"], nil)
-	// if err != nil {
-	// 	return
-	// }
-	// req.Header.Set("Referer", "https://kyfw.12306.cn/otn/login/init")
-	// res, err := client.Do(req)
-
 	client := netutil.GetMajorClient()
 
 	data := make(url.Values)
@@ -164,7 +184,7 @@ func captchaCheck(captchaAnswer string) (err error) {
 	data["rand"] = []string{"sjrand"}
 	data["login_site"] = []string{"E"}
 
-	res, err := client.PostForm(config.Urls["checkCaptcha"], data)
+	res, err := client.PostForm(constant.Urls["checkCaptcha"], data)
 	if err != nil {
 		return
 	}
@@ -175,14 +195,14 @@ func captchaCheck(captchaAnswer string) (err error) {
 		fmt.Println("Fatal error ", err.Error())
 		return
 	}
-	resultCode := jsoniter.Get(content, "result_code").ToInt()
 
-	if resultCode == 4 {
+	var ccRes CheckCaptchaResponse
+	err = json.Unmarshal(content, &ccRes)
+
+	if ccRes.ResultCode == 4 {
 		fmt.Println("验证码校验通过!")
 		return
 	}
-	resultMsg := jsoniter.Get(content, "result_message").ToString()
-	fmt.Println("验证码校验失败!", resultMsg)
-	err = errors.New(resultMsg)
+	err = errors.New(ccRes.ResultMessage)
 	return
 }

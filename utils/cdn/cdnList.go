@@ -3,7 +3,7 @@ package cdnutil
 import (
 	"sync"
 
-	"github.com/yockii/grab12306/config"
+	"github.com/yockii/grab12306/constant"
 )
 
 var cdnList []Cdn
@@ -16,9 +16,9 @@ func InitCdn() {
 	dealingList = make([]Cdn, 0, total)
 	i := 0
 	var wg sync.WaitGroup
-	for ; i < total/config.CdnDealCountPerTime; i++ {
+	for ; i < total/constant.CdnDealCountPerTime; i++ {
 		wg.Add(1)
-		dealList := list[i*config.CdnDealCountPerTime : (i+1)*config.CdnDealCountPerTime]
+		dealList := list[i*constant.CdnDealCountPerTime : (i+1)*constant.CdnDealCountPerTime]
 		VerifyCdnList(dealList)
 		go func() {
 			defer wg.Done()

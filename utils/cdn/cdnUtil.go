@@ -11,9 +11,11 @@ import (
 	"sync/atomic"
 	"time"
 
-	jsoniter "github.com/json-iterator/go"
+	netutil "github.com/yockii/grab12306/utils/net"
 
-	"github.com/yockii/grab12306/config"
+	"github.com/yockii/grab12306/constant"
+
+	jsoniter "github.com/json-iterator/go"
 )
 
 // Cdn 结构
@@ -33,8 +35,8 @@ type Cdn struct {
 // GetCdnList 从服务器获取Cdn列表
 func GetCdnList() []Cdn {
 	var r []Cdn
-	if config.FetchCdnFromGithub {
-		resp, err := http.Get(config.CdnFetchURI)
+	if constant.FetchCdnFromGithub {
+		resp, err := http.Get(constant.CdnFetchURI)
 		if err != nil {
 			panic(err)
 		}
@@ -80,7 +82,7 @@ func VerifyCdnList(cdnList []Cdn) int {
 }
 
 func verifyCdn(cdn *Cdn) bool {
-	req, err := http.NewRequest("GET", fmt.Sprintf("https://%s/%s", cdn.IP, config.Verify12306URI), nil)
+	req, err := http.NewRequest("GET", fmt.Sprintf("https://%s/%s", cdn.IP, constant.Verify12306URI), nil)
 	if err != nil {
 		panic(err)
 	}
