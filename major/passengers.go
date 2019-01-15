@@ -8,39 +8,19 @@ import (
 	"strconv"
 
 	"github.com/yockii/grab12306/constant"
+	"github.com/yockii/grab12306/domain"
 
 	netutil "github.com/yockii/grab12306/utils/net"
 )
 
-// Passenger 乘客信息
-type Passenger struct {
-	Code                string `json:"code"`
-	PassengerName       string `json:"passenger_name"`
-	SexCode             string `json:"sex_code"`
-	BornDate            string `json:"born_date"`
-	CountryCode         string `json:"country_code"`
-	PassengerIDTypeCode string `json:"passenger_id_type_code"`
-	PassengerIDTypeName string `json:"passenger_id_type_name"`
-	PassengerIDNo       string `json:"passenger_id_no"`
-	PassengerType       string `json:"passenger_type"`
-	PassengerFlag       string `json:"passenger_flag"`
-	PassengerTypeName   string `json:"passenger_type_name"`
-	MobileNo            string `json:"mobile_no"`
-	PhoneNo             string `json:"phone_no"`
-	Email               string `json:"email"`
-	Address             string `json:"address"`
-	Postalcode          string `json:"postalcode"`
-	FirstLetter         string `json:"first_letter"`
-}
-
 // MyPassengers 用户账号中的乘客信息
-var MyPassengers []Passenger
+var MyPassengers []domain.Passenger
 
 // FetchMyPassengers 从12306获取乘客信息
 func FetchMyPassengers() (success bool) {
 	pageIndex := 1
 	pageSize := 10
-	var myPs []Passenger
+	var myPs []domain.Passenger
 	success, ps, totalPage := fetchPassengers(pageIndex, pageSize)
 	if success {
 		if len(ps) > 0 {
@@ -63,7 +43,7 @@ func FetchMyPassengers() (success bool) {
 	return
 }
 
-func fetchPassengers(pageIndex, pageSize int) (success bool, ps []Passenger, totalPage int) {
+func fetchPassengers(pageIndex, pageSize int) (success bool, ps []domain.Passenger, totalPage int) {
 	data := make(url.Values)
 	data["pageIndex"] = []string{strconv.Itoa(pageIndex)}
 	data["pageSize"] = []string{strconv.Itoa(pageSize)}
@@ -103,7 +83,7 @@ type PassengerResponse struct {
 
 // PassengerPagedInfo 乘客信息返回结果的分页信息
 type PassengerPagedInfo struct {
-	Flag      bool        `json:"flag"`
-	PageTotal int         `json:"pageTotal"`
-	Datas     []Passenger `json:"datas"`
+	Flag      bool               `json:"flag"`
+	PageTotal int                `json:"pageTotal"`
+	Datas     []domain.Passenger `json:"datas"`
 }

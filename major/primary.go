@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/yockii/grab12306/constant"
+	"github.com/yockii/grab12306/domain"
 
 	netutil "github.com/yockii/grab12306/utils/net"
 )
@@ -72,12 +73,6 @@ func LoginSuit(username, password string) (isPass bool, err error) {
 	return
 }
 
-// UamauthClientResponse 获取校验后的用户名返回信息
-type UamauthClientResponse struct {
-	ResultCode int    `json:"result_code"`
-	Username   string `json:"username"`
-}
-
 func getUsername() (success bool) {
 	client := netutil.GetMajorClient()
 	data := make(url.Values)
@@ -89,7 +84,7 @@ func getUsername() (success bool) {
 	}
 	defer res.Body.Close()
 	content, err := ioutil.ReadAll(res.Body)
-	var uRes UamauthClientResponse
+	var uRes domain.UamauthClientResponse
 	err = json.Unmarshal(content, &uRes)
 	if uRes.ResultCode == 0 {
 		MyAccount.Username = uRes.Username
@@ -97,12 +92,6 @@ func getUsername() (success bool) {
 		return
 	}
 	return
-}
-
-// AuthResponse 校验请求返回信息，主要获取token
-type AuthResponse struct {
-	ResultCode int    `json:"result_code"`
-	AppToken   string `json:"newapptk"`
 }
 
 func auth() (success bool) {
@@ -116,7 +105,7 @@ func auth() (success bool) {
 	}
 	defer res.Body.Close()
 	content, err := ioutil.ReadAll(res.Body)
-	var aRes AuthResponse
+	var aRes domain.AuthResponse
 	err = json.Unmarshal(content, &aRes)
 	if err != nil {
 		fmt.Println(err)
@@ -131,12 +120,6 @@ func auth() (success bool) {
 		return
 	}
 	return
-}
-
-// BaseLoginResponse 登录返回
-type BaseLoginResponse struct {
-	ResultCode int    `json:"result_code"`
-	Uamtk      string `json:"uamtk"`
 }
 
 func login(username, password string) (success bool) {
@@ -155,7 +138,7 @@ func login(username, password string) (success bool) {
 	defer res.Body.Close()
 	content, err := ioutil.ReadAll(res.Body)
 
-	var blRes BaseLoginResponse
+	var blRes domain.BaseLoginResponse
 	err = json.Unmarshal(content, &blRes)
 	if err != nil {
 		fmt.Println(err)
@@ -168,12 +151,6 @@ func login(username, password string) (success bool) {
 		return
 	}
 	return
-}
-
-// CheckCaptchaResponse 登录返回
-type CheckCaptchaResponse struct {
-	ResultCode    int    `json:"result_code"`
-	ResultMessage string `json:"result_message"`
 }
 
 func captchaCheck(captchaAnswer string) (err error) {
@@ -196,7 +173,7 @@ func captchaCheck(captchaAnswer string) (err error) {
 		return
 	}
 
-	var ccRes CheckCaptchaResponse
+	var ccRes domain.CheckCaptchaResponse
 	err = json.Unmarshal(content, &ccRes)
 
 	if ccRes.ResultCode == 4 {

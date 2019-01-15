@@ -20,16 +20,37 @@ const CdnDealCountPerTime = 100
 
 // Urls 所有12306处理请求的的Url信息
 var Urls = map[string]string{
-	"loginPage":    "https://kyfw.12306.cn/otn/login/init",
-	"loginCaptcha": "https://kyfw.12306.cn/passport/captcha/captcha-image",
-	// "loginCaptcha": "http://localhost:8000/captcha-image.jpg",
-	"checkCaptcha":  "https://kyfw.12306.cn/passport/captcha/captcha-check",
-	"baseLogin":     "https://kyfw.12306.cn/passport/web/login",
-	"auth":          "https://kyfw.12306.cn/passport/web/auth/uamtk",
-	"uamauthclient": "https://kyfw.12306.cn/otn/uamauthclient",
-	"passengers":    "https://kyfw.12306.cn/otn/passengers/query",
-	"leftTicket":    "https://kyfw.12306.cn/otn/leftTicket/queryZ",
-	"leftTicketCDN": "https://%s/otn/leftTicket/queryZ",
+	"loginPage":      "https://kyfw.12306.cn/otn/login/init",
+	"loginCaptcha":   "https://kyfw.12306.cn/passport/captcha/captcha-image",
+	"checkCaptcha":   "https://kyfw.12306.cn/passport/captcha/captcha-check",
+	"baseLogin":      "https://kyfw.12306.cn/passport/web/login",
+	"auth":           "https://kyfw.12306.cn/passport/web/auth/uamtk",
+	"uamauthclient":  "https://kyfw.12306.cn/otn/uamauthclient",
+	"passengers":     "https://kyfw.12306.cn/otn/passengers/query",
+	"leftTicket":     "https://kyfw.12306.cn/otn/leftTicket/queryZ",
+	"leftTicketCDN":  "https://%s/otn/leftTicket/queryZ",
+	"submitOrder":    "https://kyfw.12306.cn/otn/leftTicket/submitOrderRequest",
+	"initDcPage":     "https://kyfw.12306.cn/otn/confirmPassenger/initDc",
+	"checkOrderInfo": "https://kyfw.12306.cn/otn/confirmPassenger/checkOrderInfo",
+	"stationNames":   "https://kyfw.12306.cn/otn/resources/js/framework/station_name.js?station_version=1.9090",
+	"queueCount":     "https://kyfw.12306.cn/otn/confirmPassenger/getQueueCount",
+	"confirmQueue":   "https://kyfw.12306.cn/otn/confirmPassenger/confirmSingleForQueue",
+	"queryOrder":     "https://kyfw.12306.cn/otn/confirmPassenger/queryOrderWaitTime",
+}
+
+// PassengerTicketSeatTypes 乘客座位类型代码
+var PassengerTicketSeatTypes = map[string]string{
+	"特等座":  "P",
+	"一等座":  "M",
+	"二等座":  "O",
+	"动卧":   "F",
+	"硬座":   "1",
+	"无座":   "1",
+	"软座":   "2",
+	"硬卧":   "3",
+	"软卧":   "4",
+	"高级软卧": "6",
+	"商务座":  "9",
 }
 
 // CaptchaPoints 验证码坐标，后期改为通过随机数计算

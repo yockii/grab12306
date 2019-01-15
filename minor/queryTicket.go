@@ -5,62 +5,19 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"net/url"
 	"strconv"
 	"strings"
 
 	"github.com/yockii/grab12306/constant"
+	"github.com/yockii/grab12306/domain"
 	netutil "github.com/yockii/grab12306/utils/net"
 )
 
-// LeftTicketResponse 余票查询返回信息
-type LeftTicketResponse struct {
-	HTTPStatus int            `json:"httpstatus"`
-	Messages   string         `json:"messages"`
-	Status     bool           `json:"status"`
-	Data       LeftTicketData `json:"data"`
-}
-
-// LeftTicketData 余票信息
-type LeftTicketData struct {
-	Flag   string            `json:"flag"`
-	Map    map[string]string `json:"map"`
-	Result []string          `json:"result"`
-}
-
-// TrainTicketInfo 每个车次的余票情况
-type TrainTicketInfo struct {
-	Secret            string // 密钥
-	TrainNo           string // 车号
-	TrainCode         string // 车次
-	StartStationCode  string // 起始站
-	EndStationCode    string // 终点站
-	FromStationCode   string // 出发站
-	ToStationCode     string // 到达站
-	StartTime         string // 出发时间
-	ArriveTime        string // 到达时间
-	Duration          string // 历时
-	CanBuy            bool   // 是否允许购买
-	StartTrainDate    string // 出发日期
-	SeniorSoftSleeper string // 高级软卧
-	OtherSeat         string // 其他席位
-	SoftSleeper       string // 软卧
-	SoftSeat          string // 软座
-	NoSeat            string // 无座
-	HardSleeper       string // 硬卧
-	HardSeat          string // 硬座
-	SecondClassSeat   string // 二等座
-	FirstClassSeat    string // 一等座
-	BusinessClassSeat string // 商务特等座
-	MCSleeper         string // 动卧
-
-	Empty bool // 空数据
-}
-
-func transferToTrainTicketInfo(result string) (tti *TrainTicketInfo) {
+func transferToTrainTicketInfo(result string) (tti *domain.TrainTicketInfo) {
 	sa := strings.Split(result, "|")
-	tti = &TrainTicketInfo{}
-	tti.Secret, _ = url.QueryUnescape(sa[0])
+	tti = &domain.TrainTicketInfo{}
+	tti.Secret = sa[0]
+	// tti.Secret, _ = url.QueryUnescape(sa[0])
 	tti.TrainNo = sa[2]
 	tti.TrainCode = sa[3]
 	tti.StartStationCode = sa[4]
@@ -71,7 +28,9 @@ func transferToTrainTicketInfo(result string) (tti *TrainTicketInfo) {
 	tti.ArriveTime = sa[9]
 	tti.Duration = sa[10]
 	tti.CanBuy = sa[11] == "Y"
+	tti.LeftTicketSecret = sa[12]
 	tti.StartTrainDate = sa[13]
+	tti.TrainLocationCode = sa[15]
 	tti.SeniorSoftSleeper = sa[21]
 	tti.OtherSeat = sa[22]
 	tti.SoftSleeper = sa[23]
@@ -96,7 +55,7 @@ func transferToTrainTicketInfo(result string) (tti *TrainTicketInfo) {
 // trainCodeStr: 要购买的车次(用,分割),
 // seatStr: 要购买的坐席(用,分割),
 // seatFirst: 坐席优先
-func QueryTicket(cdn, fromStationCode, toStationCode, date, passengerTypeCode, trainCodeStr, seatStr string, seatFirst bool, passengerCount int) (tti *TrainTicketInfo, err error) {
+func QueryTicket(cdn, fromStationCode, toStationCode, date, passengerTypeCode, trainCodeStr, seatStr string, seatFirst bool, passengerCount int) (tti *domain.TrainTicketInfo, err error) {
 	wantSeats := strings.Split(seatStr, ",")
 	wantTrains := strings.Split(trainCodeStr, ",")
 
@@ -120,7 +79,7 @@ func QueryTicket(cdn, fromStationCode, toStationCode, date, passengerTypeCode, t
 		return
 	}
 
-	var ltRes LeftTicketResponse
+	var ltRes domain.LeftTicketResponse
 	err = json.Unmarshal(content, &ltRes)
 	if err != nil {
 		return
@@ -135,7 +94,7 @@ func QueryTicket(cdn, fromStationCode, toStationCode, date, passengerTypeCode, t
 		err = errors.New("车次查询信息有误，或返回数据有异常")
 		return
 	}
-	var infoes []*TrainTicketInfo
+	var infoes []*domain.TrainTicketInfo
 	for _, s := range ltRes.Data.Result {
 		trainTicketInfo := transferToTrainTicketInfo(s)
 		if !trainTicketInfo.CanBuy {
@@ -167,7 +126,7 @@ func QueryTicket(cdn, fromStationCode, toStationCode, date, passengerTypeCode, t
 			infoes = append(infoes, trainTicketInfo)
 		}
 	}
-	var selected []*TrainTicketInfo
+	var selected []*domain.TrainTicketInfo
 	isSeatSelect := wantSeats[0] != ""
 	isTrainSelect := wantTrains[0] != ""
 	if seatFirst { // 坐席优先
@@ -205,7 +164,7 @@ func QueryTicket(cdn, fromStationCode, toStationCode, date, passengerTypeCode, t
 	return
 }
 
-func selectTrainTrainTicketInfo(all []*TrainTicketInfo, wantedTrains []string, passengerCount int) (trainOrdered []*TrainTicketInfo) {
+func selectTrainTrainTicketInfo(all []*domain.TrainTicketInfo, wantedTrains []string, passengerCount int) (trainOrdered []*domain.TrainTicketInfo) {
 
 	for _, train := range wantedTrains {
 		for _, tti := range all {
@@ -242,7 +201,7 @@ func selectTrainTrainTicketInfo(all []*TrainTicketInfo, wantedTrains []string, p
 	return
 }
 
-func selectSeatTrainTicketInfo(all []*TrainTicketInfo, wantedSeats []string, passengerCount int) (seatsOrdered []*TrainTicketInfo) {
+func selectSeatTrainTicketInfo(all []*domain.TrainTicketInfo, wantedSeats []string, passengerCount int) (seatsOrdered []*domain.TrainTicketInfo) {
 	// notSelected := all
 	// TODO 测试一下这种写法会不会影响原数组
 
@@ -340,7 +299,9 @@ func selectSeatTrainTicketInfo(all []*TrainTicketInfo, wantedSeats []string, pas
 					seatsOrdered = append(seatsOrdered, tti)
 					tti.Empty = true
 				}
-			case "商务特等座":
+			case "商务座":
+				fallthrough
+			case "特等座":
 				if tti.BusinessClassSeat == "" || tti.BusinessClassSeat == "无" {
 					continue
 				}
@@ -391,7 +352,7 @@ func selectSeatTrainTicketInfo(all []*TrainTicketInfo, wantedSeats []string, pas
 // arriveTime := sa[9]           // 到达时间
 // duration := sa[10]            // 历时
 // canWebBuy := sa[11]           //是否能购买：Y 可以
-// ypInfo := sa[12]
+// ypInfo := sa[12]	// leftTicket - getQueueCount用到
 // startTrainDate := sa[13] // 出发日期
 // trainSeatFeature := sa[14]
 // locationCode := sa[15]
