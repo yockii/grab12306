@@ -28,8 +28,10 @@ type Cdn struct {
 	Verified bool
 	// Available 是否可用
 	Available bool
-	// 响应速度
+	// Speed 响应速度
 	Speed int64
+	// NextAvailableTime 下次可用时间戳
+	NextAvailableTime int64
 }
 
 // GetCdnList 从服务器获取Cdn列表

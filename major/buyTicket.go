@@ -166,7 +166,7 @@ func CheckOrderInfo(repeatSubmitToken, seatType string, passengers []*domain.Pas
 		bedLevelOrderNum = string(ticketInfo.OrderRequestDTO.BedLevelOrderNum)
 	}
 	data["bed_level_order_num"] = []string{bedLevelOrderNum}
-	data["passengerTicketStr"] = []string{generatePassengerTicket(seatType, passengers)}
+	data["passengerTicketStr"] = []string{generatePassengerTicket(constant.PassengerTicketSeatTypes[seatType], passengers)}
 	data["oldPassengerStr"] = []string{generateOldPassenger(passengers)}
 	data["tour_flag"] = []string{"dc"}
 	data["randCode"] = []string{""}     // 验证码(需要的话)
@@ -233,7 +233,7 @@ func GetQueueCount(repeatSubmitToken, seatType string, tti *domain.TrainTicketIn
 func ConfirmQueue(repeatSubmitToken, seatType string, passengers []*domain.Passenger, tti *domain.TrainTicketInfo, ticketInfo *domain.TicketInfoForPassengerForm) (inQueue bool, err error) {
 	// confirmQueue
 	data := make(url.Values)
-	data["passengerTicketStr"] = []string{generatePassengerTicket(seatType, passengers)}
+	data["passengerTicketStr"] = []string{generatePassengerTicket(constant.PassengerTicketSeatTypes[seatType], passengers)}
 	data["oldPassengerStr"] = []string{generateOldPassenger(passengers)}
 	data["randCode"] = []string{""}
 	data["purpose_codes"] = []string{string(ticketInfo.PurposeCodes)}
@@ -266,45 +266,8 @@ func ConfirmQueue(repeatSubmitToken, seatType string, passengers []*domain.Passe
 	return
 }
 
-func generatePassengerTicket(seatType string, passengers []*domain.Passenger) string {
-	var bf bytes.Buffer
-	for _, p := range passengers {
-		bf.WriteString(constant.PassengerTicketSeatTypes[seatType])
-		bf.WriteString(",0,")
-		bf.WriteString(p.PassengerType)
-		bf.WriteString(",")
-		bf.WriteString(p.PassengerName)
-		bf.WriteString(",")
-		bf.WriteString(p.PassengerIDTypeCode)
-		bf.WriteString(",")
-		bf.WriteString(p.PassengerIDNo)
-		bf.WriteString(",")
-		if p.PhoneNo != "" {
-			bf.WriteString(p.PhoneNo)
-		}
-		bf.WriteString(",N_")
-	}
-	s := bf.String()
-	return s[:len(s)-1]
-}
-
-func generateOldPassenger(passengers []*domain.Passenger) string {
-	var bf bytes.Buffer
-	for _, p := range passengers {
-		bf.WriteString(p.PassengerName)
-		bf.WriteString(",")
-		bf.WriteString(p.PassengerIDTypeCode)
-		bf.WriteString(",")
-		bf.WriteString(p.PassengerIDNo)
-		bf.WriteString(",")
-		bf.WriteString(p.PassengerType)
-		bf.WriteString("_")
-	}
-	return bf.String()
-}
-
 // QueryOrder 查询订单信息
-func QueryOrder(repeatSubmitToken string) (waitCount int, orderId string, err error) {
+func QueryOrder(repeatSubmitToken string) (waitCount int, orderID string, err error) {
 	// queryOrder
 	var bs bytes.Buffer
 	bs.WriteString(constant.Urls["queryOrder"])
@@ -326,7 +289,7 @@ func QueryOrder(repeatSubmitToken string) (waitCount int, orderId string, err er
 	}
 	waitCount = qoRes.Data.WaitCount
 	if qoRes.Data.OrderID != "" {
-		orderId = string(qoRes.Data.OrderID)
+		orderID = string(qoRes.Data.OrderID)
 	}
 	return
 }

@@ -52,6 +52,25 @@ type CheckOrderInfoResponse struct {
 	} `json:"data"`
 }
 
+// AutoSubmitOrderResponse autoSubmitOrderRequest的返回信息
+type AutoSubmitOrderResponse struct {
+	ValidateMessagesShowID string   `json:"validateMessagesShowId"`
+	Status                 bool     `json:"status"`
+	HTTPStatus             int      `json:"httpstatus"`
+	Messages               []string `json:"messages"`
+	Data                   struct {
+		IfShowPassCode     string `json:"ifShowPassCode"`
+		CanChooseBeds      string `json:"canChooseBeds"`  // 是否可以选铺位
+		CanChooseSeats     string `json:"canChooseSeats"` // 是否可以选座位
+		ChooseSeats        string `json:"choose_Seats"`   // 可选座位类型
+		IsCanChooseMid     string `json:"isCanChooseMid"`
+		IfShowPassCodeTime string `json:"ifShowPassCodeTime"`
+		SubmitStatus       bool   `json:"submitStatus"` // 订单检测结果
+		SmokeStr           string `json:"smokeStr"`
+		Result             string `json:"result"`
+	} `json:"data"`
+}
+
 // LeftTicketResponse 余票查询返回信息
 type LeftTicketResponse struct {
 	HTTPStatus int    `json:"httpstatus"`

@@ -7,6 +7,9 @@ import (
 
 // Config 结构
 type Config struct {
+	Basic struct {
+		CdnBlackHouseTimeInSecond int64
+	}
 }
 
 var instance *Config
