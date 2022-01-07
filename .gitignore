@@ -1,11 +1,6 @@
-output/
-vendor/
-bind_*.go
-windows.syso
-node_modules/
-.vscode/
-yarn.lock
-.cache
-src/dist
-resources/app
-resources/checksums.json
+.idea
+target/
+logs/
+
+
+go.sum
