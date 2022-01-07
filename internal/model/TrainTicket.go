@@ -6,8 +6,9 @@ type TrainTicket struct {
 	From          string
 	To            string
 	Date          string
-	TrainNo       string // 指定车次
-	Seat          string // 指定座位
+	SeatFirst     int    // 坐席优先=1
+	WantedTrains  string // 指定车次，逗号分隔
+	WantedSeats   string // 指定座位，逗号分隔
 	TicketNum     int    // 预定票数
 	PassengerType string // 查询普通票还是学生票
 	Status        int    //状态： 1-执行中 2-预定中 3-已预定 4-已关闭
